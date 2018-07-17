@@ -1,0 +1,21 @@
+# Use phusion/baseimage as base image. To make your builds reproducible, make
+# sure you lock down to a specific version, not to `latest`!
+# See https://github.com/phusion/baseimage-docker/blob/master/Changelog.md for
+# a list of version numbers.
+FROM phusion/baseimage:0.10.1
+
+# Use baseimage-docker's init system.
+CMD ["/sbin/my_init"]
+
+# ...put your own build instructions here...
+ENV HOST_IP 127.0.0.1
+RUN apt-get update
+RUN apt-install -y wget
+RUN wget https://s3.amazonaws.com/cfengine.packages/quick-install-cfengine-enterprise.sh  && sudo bash ./quick-install-cfengine-enterprise.sh hub
+RUN /var/cfengine/bin/cf-agent --bootstrap ${HOST_IP}
+
+EXPOSE 443
+EXPOSE 5308
+
+# Clean up APT when done.
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
